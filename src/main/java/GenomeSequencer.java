@@ -91,7 +91,7 @@ public class GenomeSequencer {
 
         long end = System.currentTimeMillis();
         long elapsed = (end - start) / 1000;
-        System.out.println("Elapsed time in seconds: " + elapsed);
+        System.out.println("Execution time in seconds: " + elapsed);
     }
 
 }
