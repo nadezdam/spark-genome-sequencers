@@ -16,18 +16,23 @@ import sequencer.algorithm.index.IndexSequencer;
 import sequencer.algorithm.local_alignment.LocalAlignmentSequencer;
 
 import java.io.IOException;
-
+import java.io.InputStream;
+import java.util.Properties;
 import static java.lang.Runtime.*;
 
 public class GenomeSequencer {
     public static void main(String[] args) throws IOException {
-        System.setProperty("hadoop.home.dir", "C:\\winutils");
-        String inputFile = args[0];
-        String output = args[1];
-        String pattern = args[2];
-        int editLimit = Integer.parseInt(args[3]);
-        int scoreLimit = Integer.parseInt(args[4]);
-        String sequencerAlgorithm = args[5];
+//        System.setProperty("hadoop.home.dir", "C:\\winutils");
+        InputStream propertiesInputFile = GenomeSequencer.class.getClassLoader().getResourceAsStream("config.properties");
+        Properties properties = new Properties();
+        properties.load(propertiesInputFile);
+
+        String inputFile = properties.getProperty("input");
+        String output = properties.getProperty("output");
+        String pattern = properties.getProperty("pattern");
+        int editLimit = Integer.parseInt(properties.getProperty("edit-limit"));
+        int scoreLimit = Integer.parseInt(properties.getProperty("score-limit"));
+        String sequencerAlgorithm = properties.getProperty("sequencer-algorithm");
 
         // Create a Java Spark Context.
         SparkConf conf = new SparkConf().setAppName(sequencerAlgorithm).setMaster("local[*]");
@@ -35,7 +40,7 @@ public class GenomeSequencer {
 
         int numOfPartitions = getRuntime().availableProcessors()
                 * Math.max((sc.statusTracker().getExecutorInfos().length - 1), 1);
-        numOfPartitions = 4;
+//        numOfPartitions = 4;
         JavaSparkContext jsc = new JavaSparkContext(sc);
         Configuration hadoopConf = new Configuration();
         hadoopConf.set("pattern", pattern);
@@ -47,8 +52,8 @@ public class GenomeSequencer {
         }
         JavaPairRDD<Long, String> sequences = jsc
                 .newAPIHadoopFile(inputFile, SequenceInputFormat.class, LongWritable.class, Text.class, hadoopConf)
-                .mapToPair(sequence -> new Tuple2<>(sequence._1().get(), sequence._2().toString()));
-//                .repartition(numOfPartitions);
+                .mapToPair(sequence -> new Tuple2<>(sequence._1().get(), sequence._2().toString()))
+                .repartition(numOfPartitions);
 
         long start = System.currentTimeMillis();
         switch (sequencerAlgorithm) {
@@ -80,9 +85,7 @@ public class GenomeSequencer {
         }
 
 
-//        System.out.println("Num of partitions:" + offsets.getNumPartitions());
 //        offsets.persist(StorageLevel.MEMORY_ONLY());
-//        System.out.println("Num of partitions:" + offsets.getNumPartitions());
 
         jsc.close();
 
@@ -91,6 +94,4 @@ public class GenomeSequencer {
         System.out.println("Elapsed time in seconds: " + elapsed);
     }
 
-    private void executeSequencing(JavaPairRDD<Long, String> sequences, String sequenceAlgorithm) {
-    }
 }
