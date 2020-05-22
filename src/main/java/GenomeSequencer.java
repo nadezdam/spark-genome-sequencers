@@ -24,19 +24,13 @@ import static java.lang.Runtime.*;
 public class GenomeSequencer {
     public static void main(String[] args) throws IOException {
 //        System.setProperty("hadoop.home.dir", "C:\\winutils");
-//        InputStream propertiesInputFile = GenomeSequencer.class.getClassLoader().getResourceAsStream("config.properties");
-//        Properties properties = new Properties();
-//        properties.load(propertiesInputFile);
-//
-//        String inputFile = properties.getProperty("input");
-//        String output = properties.getProperty("output");
-//        String pattern = properties.getProperty("pattern");
-//        int editLimit = Integer.parseInt(properties.getProperty("edit-limit"));
-//        int scoreThreshold = Integer.parseInt(properties.getProperty("score-limit"));
-//        String sequencerAlgorithm = properties.getProperty("sequencer-algorithm");
 
 //        System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
+        if (args.length != 5) {
+            System.out.println("usage: -input -output -algorithm -pattern -numOfPartitions (if 0, then use default)");
+            return;
+        }
         String inputFile = args[0];
         String output = args[1];
         String sequencerAlgorithm = args[2];
