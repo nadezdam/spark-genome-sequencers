@@ -2,6 +2,7 @@ package sequencer.algorithm.index;
 
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
+import org.apache.spark.broadcast.Broadcast;
 import scala.Serializable;
 import scala.Tuple2;
 
@@ -12,18 +13,18 @@ public class IndexSequencer implements Serializable {
     private String pattern;
     private int patternLength;
 
-    public PairFlatMapFunction<Tuple2<Long, String>, String, Long> Kmers;
+    public PairFlatMapFunction<Tuple2<Long, String>, String, Long> CreateKmers;
     public Function<Tuple2<String, Long>, Boolean> PatternFilter;
 
-    public IndexSequencer(String pattern) {
-        this.pattern = pattern;
-        this.patternLength = pattern.length();
+    public IndexSequencer(Broadcast<String> pattern) {
+        this.pattern = pattern.getValue();
+        this.patternLength = this.pattern.length();
 
-        this.Kmers = instanceKmersFunc();
+        this.CreateKmers = instanceCreateKMersFunc();
         this.PatternFilter = instancePatternFilterFunc();
     }
 
-    private PairFlatMapFunction<Tuple2<Long, String>, String, Long> instanceKmersFunc() {
+    private PairFlatMapFunction<Tuple2<Long, String>, String, Long> instanceCreateKMersFunc() {
         return new PairFlatMapFunction<Tuple2<Long, String>, String, Long>() {
             public Iterator<Tuple2<String, Long>> call(Tuple2<Long, String> tuple) {
                 ArrayList<Tuple2<String, Long>> kmers = new ArrayList<>();
@@ -46,7 +47,6 @@ public class IndexSequencer implements Serializable {
                 return value._1().equalsIgnoreCase(pattern);
             }
         };
-
     }
 
 }

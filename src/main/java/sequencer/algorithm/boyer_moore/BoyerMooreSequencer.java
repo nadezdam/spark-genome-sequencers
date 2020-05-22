@@ -1,6 +1,7 @@
 package sequencer.algorithm.boyer_moore;
 
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.broadcast.Broadcast;
 import scala.Serializable;
 import scala.Tuple2;
 
@@ -12,8 +13,8 @@ public class BoyerMooreSequencer implements Serializable {
 
     public FlatMapFunction<Tuple2<Long, String>, Long> BoyerMooreMap;
 
-    public BoyerMooreSequencer(String pattern) {
-        worker = new BoyerMoore(pattern);
+    public BoyerMooreSequencer(Broadcast<String> pattern) {
+        worker = new BoyerMoore(pattern.getValue());
         BoyerMooreMap = instanceBoyerMooreMapFunc();
     }
 
